@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+		<style type="text/css">
+			.box{
+				width: 300px;
+				margin: 100px auto;
+			}
+			.box1{
+				width: 100%;
+			}
+			.box2{
+				margin-top: 20px;
+			}
+			.addBtn{
+				float: right;
+			}
+			.deleteBtn{
+				float: right;
+			}
+			.box3{
+				display: flex;
+				justify-content: space-between;
+				flex-wrap: wrap;
+			}
+			.box3 .p1 span,.box3 .p3{
+				color: red;
+			}
+			.box3 .p2{
+				color: #1aa034;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- vue  todoList-demo -->
+		<div id="app" @click="closeInput">
+			<div class="box">
+				<div class="box1">
+					<input type="text" placeholder="请输入" v-model="inputVal"/>
+					<button type="button" class="addBtn" @click="addFun">添加</button>
+				</div>
+				<div class="box2">
+					<p v-for="(item,index) in arr">
+						<input type="checkbox" :value="item.des" v-model="selectData"/>
+						<input type="text" v-show="item.edit" v-model="item.des" @click.stop/>
+						<span v-show="!item.edit" @click.stop="editFun(index)" >{{item.des}}</span>
+						<button class="deleteBtn" @click="deleteItemFun(index)">X</button>
+					</p>
+				</div>
+				<div class="box3">
+					<p class="p1">
+						<input type="checkbox" :checked="arr.length&&arr.length==selectData.length" @click="allSelectFun($event)"/>
+						<span>全选</span>
+					</p>
+					<p class="p2">共{{arr.length}}项, 选中{{selectData.length}}项</p>
+					<p class="p3" @click="deleteAll">批量删除</p>
+				</div>
+			</div>
+		</div>
+		<!-- 添加相同项的时候有BUG(已迂回修复)     修改项的时候有BUG-->
+		<script type="text/javascript">
+			const app = new Vue({
+				el:"#app",
+				data:{
+					inputVal:"",
+					arr:[
+						{des:"11",edit:false},
+						{des:"22",edit:false},
+						{des:"33",edit:false},
+						{des:"44",edit:false}
+					],
+					selectData:[]
+				},
+				methods:{
+					addFun(){
+						if(!this.inputVal){
+							alert("请输入内容")
+							return
+						}else{
+							let status = true
+							this.arr.forEach(item => {
+								if(item.des == this.inputVal){
+									status = false
+									alert("内容重复了")   // 修复添加重复的项有BUG
+								}
+							})
+							if(status){
+								this.arr.push({des:this.inputVal,esit:false})
+							}
+							this.inputVal = ""
+						}
+					},
+					editFun(editIndex){
+						this.arr[editIndex].edit = true
+					},
+					closeInput(){  // 此方法有缺陷
+						this.arr.forEach(item => {
+							item.edit = false
+						})
+					},
+					deleteItemFun(deleteIndex){
+						if(this.selectData.includes(this.arr[deleteIndex].des)){
+							console.log("当前删除的是被选中的",this.arr[deleteIndex].des)
+							for(var i = 0;i < this.selectData.length ; i ++){
+								if(this.selectData[i] == this.arr[deleteIndex].des){
+									this.selectData.splice(i,1)
+									i--
+								}
+							}
+						}
+						this.arr.splice(deleteIndex,1)
+					},
+					allSelectFun(e){
+						console.log(this.selectData,e.target,11)
+						let allCheck = []
+						this.arr.forEach(item => {
+							allCheck.push(item.des)
+						})
+						this.selectData = e.target.checked?allCheck:[]  // 判断当前的全选有没有勾选
+					},
+					deleteAll(){
+						this.arr = this.arr.filter(item => {
+							return !this.selectData.includes(item.des)
+						})
+						this.selectData = []
+					}
+				}
+			})
+		</script>
+	</body>
+</html>
